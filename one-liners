@@ -1,0 +1,25 @@
+>> Load troubleshooting
+echo -e "\nThe following is an accumulated total of CPU and Memory percentage usage by PHP processes for a 30 second interval:\n";paste <(n=0;echo "CPU% Total:";while [[ "$n" -lt "60" ]]; do let n++; sleep .5; ps --no-headers -o %cpu,user -C php,php-cgi; done | awk '{s[$2]+=$1}END{ for(i in s) print s[i], i }' | sort -rnk1) <(n=0;echo "Mem% Total:"; while [[ "$n" -lt "60" ]]; do let n++; sleep .5; ps --no-headers -o %mem,user -C php,php-cgi; done | awk '{s[$2]+=$1}END{ for(i in s) print s[i], i }' | sort -rnk1)|column -t
+---------------------------------------------------------------------
+
+>> Load troubleshooting	
+echo "USER COUNT CPU_SUM CPU_AVG MEM_SUM MEM_AVG" | awk '{ printf("%10s%15s%15s%15s%15s%15s\n",$1,$2,$3,$4,$5,$6);}' ; /opt/hgmods/hgacct/sa --print-users | awk 'NR!=1 {a[$1]++;b[$1]=b[$1]+$2;c[$1]=c[$1]+$4;}END{for (i in a) printf("%10s %13.0f %15.2f %15.2f %15.2f %13.2f\n", i, a[i], b[i], b[i]/a[i], c[i], c[i]/a[i])}' | sort -n -k5 -r | head -32
+---------------------------------------------------------------------
+
+>> Load troubleshooting	
+for i in {1..32} ; do ps -o user -C php,php-cgi --sort user h ; done |sort|uniq -c|sort -n
+--------------------------------------------------------------------
+
+>> Load troubleshooting	
+ngrep -d any -q -W byline -n 1024 -c200 'GET|POST' port 80 |egrep Host |gawk -F": " 'NF == 2 { print $2 }' |sort |uniq -c |sort -k1n
+---------------------------------------------------------------------
+
+>> Load troubleshooting	
+lynx -dump -width=1000 localhost/whm-server-status  | awk '/GET|POST/'|awk '{print $13 " " "http://" $12""$14}'|sort|uniq -c|sort -n
+---------------------------------------------------------------------
+
+>> Tool useful to troubleshoot load/Memory issues	
+Install Sys-Snap and then execute:
+sys='sys-snap -a 02/06 03:16'; echo; $sys|head -3; echo; echo "[ Top Script(s) ]"; $sys |grep -oP '(?<=SCRIPT_FILENAME=)\S*'|sort|uniq -c|sort -gr|head -n 10;echo "..."; echo; echo "[ Top Remote IP(s) ]"; $sys |grep -oP '(?<=REMOTE_ADDR=)\S*'|sort|uniq -c|sort -gr|head -n 10;echo "..."; echo; echo "[ Top URI(s) ]"; $sys |grep -oP '(?<=REQUEST_URI=)\S*'|sort|uniq -c|sort -gr|head -n 10;echo "..."; echo; echo "[ Top Referer(s) ]"; $sys |grep -oP '(?<=HTTP_USER_AGENT=).*(?=QUERY)'|sort|uniq -c|sort -gr|head -n 10;echo "..."; echo
+--------------------------------------------------------------------
+
